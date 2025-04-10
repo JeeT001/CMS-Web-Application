@@ -8,7 +8,7 @@ use App\Models\Post;
 class UserPostController extends Controller
 {
     /**
-     * Display a listing of the user's posts.
+     * Display a listing of the user's post.
      */
     public function index()
     {
