@@ -5,13 +5,11 @@
         </h2>
     </x-slot>
 
-    <div class="py-12">
+    <section class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
-            
-
             {{-- My Posts Section --}}
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mt-6">
+            <section class="bg-white overflow-hidden shadow-sm sm:rounded-lg mt-6">
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-xl font-bold">My Posts</h2>
@@ -22,7 +20,7 @@
                         <p class="text-gray-600">You haven't created any posts yet.</p>
                     @else
                         @foreach ($posts as $post)
-                            <div class="border p-4 mb-4 rounded">
+                            <article class="border p-4 mb-4 rounded">
                                 <h3 class="text-lg font-semibold">{{ $post->title }}</h3>
                                 <p class="text-gray-700">{{ $post->description }}</p>
                                 @if($post->image)
@@ -36,22 +34,24 @@
                                         <button type="submit" class="text-red-500">Delete</button>
                                     </form>
                                 </div>
-                            </div>
+                            </article>
                         @endforeach
                     @endif
                 </div>
-            </div>
+            </section>
 
         </div>
-    </div>
+    </section>
 </x-app-layout>
 
 <script>
+    // Handle image upload form submission
     document.getElementById('uploadForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
+        e.preventDefault(); // Prevent default form submission
 
-        const formData = new FormData(this);
+        const formData = new FormData(this); // Collect form data
 
+        // Send POST request to the server
         const response = await fetch('/upload-image', {
             method: 'POST',
             body: formData,
@@ -62,6 +62,7 @@
 
         const result = await response.json();
 
+        // Show upload result to the user
         if (response.ok) {
             document.getElementById('uploadResult').textContent = 'Upload successful! Path: ' + result.path;
         } else {

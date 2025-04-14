@@ -4,16 +4,15 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Post;
-use Illuminate\Support\Facades\Validator;
 
 class UserPostController extends Controller
 {
     /**
-     * Display a listing of the user's post.
+     * Display a listing of the user's posts.
      */
     public function index()
     {
-        $posts = Post::where('user_id', auth()->id())->get();
+        $posts = Post::where('user_id', auth()->id())->latest()->get();
         return view('userposts.index', compact('posts'));
     }
 
@@ -28,48 +27,46 @@ class UserPostController extends Controller
     /**
      * Store a newly created post in storage.
      */
-    
-
     public function store(Request $request)
-{
-    $validated = $request->validate([
-        'title' => [
-            'required',
-            'string',
-            'max:255',
-            function ($attribute, $value, $fail) {
-                if (Post::where('user_id', auth()->id())->where('title', $value)->exists()) {
-                    $fail('You have already used this title.');
-                }
-            },
-        ],
-        'description' => 'nullable|string|max:1000',
-        'image' => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:2048',
-    ]);
+    {
+        $validated = $request->validate([
+            'title' => [
+                'required', 'string', 'max:255',
+                function ($attribute, $value, $fail) {
+                    if (Post::where('user_id', auth()->id())->where('title', $value)->exists()) {
+                        $fail('You have already used this title.');
+                    }
+                },
+            ],
+            'description' => 'nullable|string|max:1000',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:2048',
+        ]);
 
-    // Sanitize input
-    $validated['title'] = strip_tags($validated['title']);
-    $validated['description'] = strip_tags($validated['description'] ?? '');
+        // Sanitize inputs
+        $validated['title'] = strip_tags($validated['title']);
+        $validated['description'] = strip_tags($validated['description'] ?? '');
 
-    if ($request->hasFile('image')) {
-        $validated['image'] = $request->file('image')->store('posts', 'public');
+        // Handle file upload
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('posts', 'public');
+        }
+
+        $validated['user_id'] = auth()->id();
+
+        Post::create($validated);
+
+        return redirect()->route('dashboard')->with('success', 'Post created and shown on your dashboard!');
     }
-
-    $validated['user_id'] = auth()->id();
-
-    Post::create($validated);
-
-    // Redirect to dashboard instead of myposts.index
-    return redirect()->route('dashboard')->with('success', 'Post created and shown on your dashboard!');
-}
-
 
     /**
      * Show the form for editing the specified post.
      */
     public function edit(string $id)
     {
-        $post = Post::where('id', $id)->where('user_id', auth()->id())->firstOrFail();
+        $post = Post::where('id', $id)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+
         return view('userposts.edit', compact('post'));
     }
 
@@ -78,13 +75,13 @@ class UserPostController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $post = Post::where('id', $id)->where('user_id', auth()->id())->firstOrFail();
+        $post = Post::where('id', $id)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
 
         $validated = $request->validate([
             'title' => [
-                'required',
-                'string',
-                'max:255',
+                'required', 'string', 'max:255',
                 function ($attribute, $value, $fail) use ($post) {
                     if (Post::where('user_id', auth()->id())
                         ->where('title', $value)
@@ -98,17 +95,19 @@ class UserPostController extends Controller
             'image' => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:2048',
         ]);
 
-        // Sanitize input
+        // Sanitize inputs
         $validated['title'] = strip_tags($validated['title']);
         $validated['description'] = strip_tags($validated['description'] ?? '');
 
+        // Handle file upload
         if ($request->hasFile('image')) {
             $validated['image'] = $request->file('image')->store('posts', 'public');
         }
 
         $post->update($validated);
 
-        return redirect()->route('myposts.index')->with('success', 'Post updated successfully!');
+        // Redirect to dashboard after update
+        return redirect()->route('dashboard')->with('success', 'Post updated successfully!');
     }
 
     /**
@@ -116,9 +115,13 @@ class UserPostController extends Controller
      */
     public function destroy(string $id)
     {
-        $post = Post::where('id', $id)->where('user_id', auth()->id())->firstOrFail();
+        $post = Post::where('id', $id)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+
         $post->delete();
 
-        return redirect()->route('myposts.index')->with('success', 'Post deleted successfully!');
+        // Redirect to dashboard after deletion
+        return redirect()->route('dashboard')->with('success', 'Post deleted successfully!');
     }
 }

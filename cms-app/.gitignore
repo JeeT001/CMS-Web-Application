@@ -1,3 +1,4 @@
+# Laravel & PHP
 /.phpunit.cache
 /node_modules
 /public/build
@@ -21,3 +22,22 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# WordPress
+wp-config.php
+wp-content/uploads/
+wp-content/cache/
+wp-content/upgrade/
+
+# Ignore vendor files (for Composer)
+vendor/
+
+# Ignore node_modules for JS/CSS dependencies
+node_modules/
+
+# Ignore sensitive files
+.env
+
+# Ignore IDE-specific files
+.vscode/
+.idea/
