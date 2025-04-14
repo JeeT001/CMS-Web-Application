@@ -8,9 +8,9 @@
     <form method="POST" action="{{ route('profile.update') }}">
     @csrf
     @method('PUT')
-    <input name="name" value="{{ old('name', $user->name) }}" />
+    <!-- <input name="name" value="{{ old('name', $user->name) }}" />
     <input name="email" value="{{ old('email', $user->email) }}" />
-    <button type="submit">Update</button>
+    <button type="submit">UpdateS</button> -->
 </form>
 
 

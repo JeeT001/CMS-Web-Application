@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Models\Post;
 
 Route::get('/', function () {
     return view('welcome');
@@ -11,9 +12,17 @@ Route::get('/hello', function () {
     return ('welcome');
 });
 
+// Route::get('/dashboard', function () {
+//     return view('dashboard');
+// })->middleware(['auth', 'verified'])->name('dashboard');
+
+
+
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    $posts = Post::where('user_id', auth()->id())->latest()->get();
+    return view('dashboard', compact('posts'));
 })->middleware(['auth', 'verified'])->name('dashboard');
+
 
 Route::middleware('auth')->group(function () {
     

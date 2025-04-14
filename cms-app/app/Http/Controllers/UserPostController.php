@@ -28,38 +28,41 @@ class UserPostController extends Controller
     /**
      * Store a newly created post in storage.
      */
+    
+
     public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'title' => [
-                'required',
-                'string',
-                'max:255',
-                // Prevents duplicate titles for the same user
-                function ($attribute, $value, $fail) {
-                    if (Post::where('user_id', auth()->id())->where('title', $value)->exists()) {
-                        $fail('You have already used this title.');
-                    }
-                },
-            ],
-            'description' => 'nullable|string|max:1000',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:2048',
-        ]);
+{
+    $validated = $request->validate([
+        'title' => [
+            'required',
+            'string',
+            'max:255',
+            function ($attribute, $value, $fail) {
+                if (Post::where('user_id', auth()->id())->where('title', $value)->exists()) {
+                    $fail('You have already used this title.');
+                }
+            },
+        ],
+        'description' => 'nullable|string|max:1000',
+        'image' => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:2048',
+    ]);
 
-        // Sanitize input
-        $validated['title'] = strip_tags($validated['title']);
-        $validated['description'] = strip_tags($validated['description'] ?? '');
+    // Sanitize input
+    $validated['title'] = strip_tags($validated['title']);
+    $validated['description'] = strip_tags($validated['description'] ?? '');
 
-        if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('posts', 'public');
-        }
-
-        $validated['user_id'] = auth()->id();
-
-        Post::create($validated);
-
-        return redirect()->route('myposts.index')->with('success', 'Post created successfully!');
+    if ($request->hasFile('image')) {
+        $validated['image'] = $request->file('image')->store('posts', 'public');
     }
+
+    $validated['user_id'] = auth()->id();
+
+    Post::create($validated);
+
+    // Redirect to dashboard instead of myposts.index
+    return redirect()->route('dashboard')->with('success', 'Post created and shown on your dashboard!');
+}
+
 
     /**
      * Show the form for editing the specified post.

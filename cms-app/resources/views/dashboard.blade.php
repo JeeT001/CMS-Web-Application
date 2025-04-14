@@ -7,22 +7,45 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    {{ __("You're logged in!") }}
-                    <form id="uploadForm" enctype="multipart/form-data">
-    @csrf
-    <input type="file" name="image" required class="mb-2">
-    <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded">Upload Image</button>
-</form>
 
-<div id="uploadResult" class="mt-4 text-green-600 font-semibold"></div>
+            
 
+            {{-- My Posts Section --}}
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mt-6">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-bold">My Posts</h2>
+                        <a href="{{ route('myposts.create') }}" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">+ Create Post</a>
+                    </div>
+
+                    @if($posts->isEmpty())
+                        <p class="text-gray-600">You haven't created any posts yet.</p>
+                    @else
+                        @foreach ($posts as $post)
+                            <div class="border p-4 mb-4 rounded">
+                                <h3 class="text-lg font-semibold">{{ $post->title }}</h3>
+                                <p class="text-gray-700">{{ $post->description }}</p>
+                                @if($post->image)
+                                    <img src="{{ asset('storage/' . $post->image) }}" alt="Post Image" class="w-48 mt-2 rounded">
+                                @endif
+                                <div class="mt-2 flex gap-4">
+                                    <a href="{{ route('myposts.edit', $post->id) }}" class="text-blue-500">Edit</a>
+                                    <form method="POST" action="{{ route('myposts.destroy', $post->id) }}">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-500">Delete</button>
+                                    </form>
+                                </div>
+                            </div>
+                        @endforeach
+                    @endif
                 </div>
             </div>
+
         </div>
     </div>
 </x-app-layout>
+
 <script>
     document.getElementById('uploadForm').addEventListener('submit', async function(e) {
         e.preventDefault();
@@ -46,4 +69,3 @@
         }
     });
 </script>
-
