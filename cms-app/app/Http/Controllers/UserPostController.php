@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Post;
+use Illuminate\Support\Facades\Validator;
 
 class UserPostController extends Controller
 {
@@ -30,10 +31,24 @@ class UserPostController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'image' => 'nullable|image|max:2048',
+            'title' => [
+                'required',
+                'string',
+                'max:255',
+                // Prevents duplicate titles for the same user
+                function ($attribute, $value, $fail) {
+                    if (Post::where('user_id', auth()->id())->where('title', $value)->exists()) {
+                        $fail('You have already used this title.');
+                    }
+                },
+            ],
+            'description' => 'nullable|string|max:1000',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:2048',
         ]);
+
+        // Sanitize input
+        $validated['title'] = strip_tags($validated['title']);
+        $validated['description'] = strip_tags($validated['description'] ?? '');
 
         if ($request->hasFile('image')) {
             $validated['image'] = $request->file('image')->store('posts', 'public');
@@ -63,10 +78,26 @@ class UserPostController extends Controller
         $post = Post::where('id', $id)->where('user_id', auth()->id())->firstOrFail();
 
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'image' => 'nullable|image|max:2048',
+            'title' => [
+                'required',
+                'string',
+                'max:255',
+                function ($attribute, $value, $fail) use ($post) {
+                    if (Post::where('user_id', auth()->id())
+                        ->where('title', $value)
+                        ->where('id', '!=', $post->id)
+                        ->exists()) {
+                        $fail('You already have another post with this title.');
+                    }
+                },
+            ],
+            'description' => 'nullable|string|max:1000',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:2048',
         ]);
+
+        // Sanitize input
+        $validated['title'] = strip_tags($validated['title']);
+        $validated['description'] = strip_tags($validated['description'] ?? '');
 
         if ($request->hasFile('image')) {
             $validated['image'] = $request->file('image')->store('posts', 'public');
